@@ -2,6 +2,8 @@ const { google } = require("googleapis");
 const SERVICE_ACCOUNT_FILE = "../service-account-file.json";
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 const credentials = require(SERVICE_ACCOUNT_FILE);
+const fs = require('fs');
+const path = require('path');
 
 const authClient = new google.auth.JWT(
   credentials.client_email,
@@ -13,6 +15,28 @@ const authClient = new google.auth.JWT(
 const sheets = google.sheets({ version: "v4", auth: authClient });
 const linkSheetID = "144w-saXXosuMoqMatUAnaWGzrNe4rfL7Z7mfFIZUsdc";
 const analyticsSheetID = "1unqoavXeF6NDh_RxyVIA_E7FS7V5r74N1Tp3s65lAco";
+
+
+async function writeAnalyticsData2JSON(data) {
+  // Define the path and filename for the JSON file
+  const filePath = path.join(__dirname, 'analyticsData.json');
+  
+  // Convert the data to a JSON string with indentation for readability
+  const jsonData = JSON.stringify(data, null, 2);
+  
+  // Use a Promise to handle the asynchronous file write operation
+  return new Promise((resolve, reject) => {
+    fs.writeFile(filePath, jsonData, 'utf8', (err) => {
+      if (err) {
+        console.error('An error occurred while writing JSON to file:', err);
+        reject(err); // Reject the promise if an error occurs
+      } else {
+        console.log('Data successfully written to analyticsData.json');
+        resolve(); // Resolve the promise on successful write
+      }
+    });
+  });
+}
 
 async function writeAnalyticsData(result) {
   try {
@@ -60,7 +84,7 @@ async function readGoogleSheetData() {
   }
   result = await summarizeFeedback(result);
   console.log(result);
-  await writeAnalyticsData(result);
+  await writeAnalyticsData2JSON(result);
 }
 
 async function summarizeFeedback(resultArray) {
