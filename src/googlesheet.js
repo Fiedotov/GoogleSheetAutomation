@@ -76,8 +76,6 @@ async function readGoogleSheetData() {
     try {
       let res = await readGoogleSheetDataByID(
         sheetIDs[i],
-        params.startDate,
-        params.endDate
       );
       result = result.concat(res);
     } catch {}
@@ -91,8 +89,8 @@ async function summarizeFeedback(resultArray) {
   const summary = {};
 
   resultArray.forEach((row) => {
-    const { sid, ssid, feedback, sheetName } = row;
-    const key = `sid: ${sid}, ssid: ${ssid}, sheetName: ${sheetName}`;
+    const { sid, ssid, feedback, sheetName, date } = row;
+    const key = `sid: ${sid}, ssid: ${ssid}, sheetName: ${sheetName}, date: ${date}`;
 
     // Initialize the summary object for the sid, ssid combination if it doesn't exist
     if (!summary[key]) {
@@ -109,6 +107,7 @@ async function summarizeFeedback(resultArray) {
         "Deja installé": 0,
         "Abandon de projet": 0,
         sheetName,
+        date,
       };
     }
 
@@ -123,8 +122,6 @@ async function summarizeFeedback(resultArray) {
 }
 
 async function readGoogleSheetDataByID(spreadsheetId, startDate, endDate) {
-  startDate = new Date(startDate);
-  endDate = new Date(endDate);
   const headerRange = "Sheet1!1:1";
   const result = [];
   try {
@@ -163,13 +160,12 @@ async function readGoogleSheetDataByID(spreadsheetId, startDate, endDate) {
       // Process rows
       rows.forEach((row) => {
         if (row[sidIndex] && row[rightOfSsidIndex]) {
-          rowDate = parseCustomDateString(row[dateIndex]);
-          if (rowDate >= startDate && rowDate <= endDate)
             result.push({
               sheetName: spreadsheetTitle,
               sid: row[sidIndex] - 0,
               ssid: row[ssidIndex] - 0,
               feedback: row[rightOfSsidIndex],
+              date: row[dateIndex]
             });
         }
       });
@@ -187,7 +183,7 @@ async function readGoogleSheetDataByID(spreadsheetId, startDate, endDate) {
 async function extractGoogleSheetData(spreadsheetId) {
   try {
     // Define the ranges to be the entire column A, cell B2 for startDate, and cell C2 for endDate
-    const ranges = ["A:A", "B2", "C2"];
+    const ranges = ["A:A"];
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId,
       ranges: ranges,
@@ -195,8 +191,6 @@ async function extractGoogleSheetData(spreadsheetId) {
 
     // Extract the values from the response
     const linkValues = response.data.valueRanges[0].values;
-    const startDateValue = response.data.valueRanges[1].values;
-    const endDateValue = response.data.valueRanges[2].values;
 
     // Process the values to extract sheet IDs
     const sheetIds = linkValues
@@ -209,40 +203,13 @@ async function extractGoogleSheetData(spreadsheetId) {
       })
       .filter((id) => id); // Filter out any null values
 
-    // Extract startDate and endDate
-    const startDate = startDateValue
-      ? startDateValue[0][0]
-      : new Date("1/1/1970");
-    const endDate = endDateValue ? endDateValue[0][0] : new Date("12/31/2050");
-
     return {
       links: sheetIds,
-      startDate: startDate,
-      endDate: endDate,
     };
   } catch (error) {
     console.error("The API returned an error: ", error);
     throw error;
   }
-}
-
-function parseCustomDateString(dateString) {
-  // Extract the date part (DD/MM/YYYY) from the full string
-  const datePart = dateString.split(" ")[0];
-
-  // Split the date string by the '/' character to get an array [DD, MM, YYYY]
-  const dateParts = datePart.split("/");
-
-  // Subtract 1 from the month value (dateParts[1]) since months are 0-indexed in JavaScript
-  // Note: The `Date` constructor accepts year, month index, and day as parameters
-  const year = parseInt(dateParts[2], 10);
-  const month = parseInt(dateParts[1], 10) - 1; // Adjust for 0-indexed months
-  const day = parseInt(dateParts[0], 10);
-
-  // Create the Date object
-  const date = new Date(year, month, day);
-
-  return date;
 }
 
 module.exports = { readGoogleSheetData };

@@ -33,7 +33,7 @@ app.get('/analytics-data', (req, res) => {
 });
 
 // Start the server on port 3000
-const PORT = 3000;
+const PORT = 3909;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
