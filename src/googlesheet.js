@@ -16,8 +16,12 @@ const sheets = google.sheets({ version: "v4", auth: authClient });
 const linkSheetID = "144w-saXXosuMoqMatUAnaWGzrNe4rfL7Z7mfFIZUsdc";
 const analyticsSheetID = "1unqoavXeF6NDh_RxyVIA_E7FS7V5r74N1Tp3s65lAco";
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function writeAnalyticsData2JSON(data) {
+  await sleep(10000);
   // Define the path and filename for the JSON file
   const filePath = path.join(__dirname, 'analyticsData.json');
   
@@ -125,6 +129,7 @@ async function readGoogleSheetDataByID(spreadsheetId, startDate, endDate) {
   const headerRange = "Sheet1!1:1";
   const result = [];
   try {
+    await sleep(2500);
     // Retrieve the sheet properties to get the sheet name
     const sheetPropertiesResponse = await sheets.spreadsheets.get({
       spreadsheetId,
@@ -133,6 +138,7 @@ async function readGoogleSheetDataByID(spreadsheetId, startDate, endDate) {
     // Assuming you are interested in the first sheet's name
     const spreadsheetTitle = sheetPropertiesResponse.data.properties.title;
     // Retrieve the header row
+    await sleep(2500);
     const headerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: headerRange,
@@ -149,6 +155,7 @@ async function readGoogleSheetDataByID(spreadsheetId, startDate, endDate) {
     }
 
     // Read the data rows
+    await sleep(2500);
     const dataRange = `Sheet1!A2:Z`; // Adjust as needed to cover all possible rows
     const dataResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -183,6 +190,7 @@ async function readGoogleSheetDataByID(spreadsheetId, startDate, endDate) {
 async function extractGoogleSheetData(spreadsheetId) {
   try {
     // Define the ranges to be the entire column A, cell B2 for startDate, and cell C2 for endDate
+    await sleep(2500);
     const ranges = ["A:A"];
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId,

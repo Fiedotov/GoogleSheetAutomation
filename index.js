@@ -39,8 +39,19 @@ app.listen(PORT, () => {
 });
 
 
-// Schedule the function to run every 1 minute
-const job = schedule.scheduleJob('*/1 * * * *', function () {
-  console.log('Running readGoogleSheetData...');
-  readGoogleSheetData();
-});
+async function doAsyncTask() {
+  try {
+    // Perform the asynchronous task here
+    console.log('Async task is running...');
+    await readGoogleSheetData(); // Replace with your actual asynchronous operation
+
+    console.log('Async task completed. Restarting task...');
+  } catch (error) {
+    console.error('An error occurred:', error);
+  } finally {
+    // Use setImmediate to avoid a potential stack overflow with direct recursion
+    setImmediate(doAsyncTask);
+  }
+}
+
+doAsyncTask(); // Start the continuous execution
