@@ -110,6 +110,7 @@ async function summarizeFeedback(resultArray) {
         "Demande pour autre produit": 0,
         "Deja installé": 0,
         "Abandon de projet": 0,
+        "Faux numéro": 0,
         sheetName,
         date,
       };
