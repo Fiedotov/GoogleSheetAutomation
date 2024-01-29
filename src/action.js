@@ -1,0 +1,8 @@
+const actions = {
+    SHEET_INSERT_DATA: 'SHEET_INSERT_DATA',
+    SHEET_UPDATE_DATA: 'SHEET_UPDATE_DATA',
+    SHEET_DELETE_DATA: 'SHEET_DELETE_DATA',
+    SHEET_READ_DATA: 'SHEET_READ_DATA',
+}
+
+module.exports = { actions };

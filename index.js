@@ -1,10 +1,12 @@
 const { readGoogleSheetData } = require("./src/googlesheet");
+const { dbOperator } = require("./src/database");
 const schedule = require("node-schedule");
 let cors = require("cors");
 const express = require('express');
 const app = express();
 const fs = require('fs');
 const path = require('path');
+const { dbOperator } = require("./src/database");
 
 app.use(cors());
 // Define the path to the JSON file
@@ -31,6 +33,49 @@ app.get('/analytics-data', (req, res) => {
     }
   });
 });
+
+// Route to handle GET request for the sheet data
+app.get('/api/v1/sheet', async (req, res) => {
+  try {
+    const sheets = await dbOperator(actions.SHEET_READ_DATA);
+    res.json(sheets);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route to handle POST request for the new sheet data
+app.post('/api/v1/sheet', async (req, res) => {
+  try {
+    const sheet = await dbOperator(actions.SHEET_INSERT_DATA, req.body);
+    res.status(201).json(sheet);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route to handle PUT request for updating the sheet data
+app.put('/api/v1/sheet/:id', async (req, res) => {
+  try {
+    const payload = { ...req.body, id: parseInt(req.params.id) };
+    const sheet = await dbOperator(actions.SHEET_UPDATE_DATA, payload);
+    res.json(sheet);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route to handle DELETE request for deleting the sheet data
+app.delete('/api/v1/sheet/:id', async (req, res) => {
+  try {
+    const payload = { id: parseInt(req.params.id) };
+    const sheet = await dbOperator(actions.SHEET_DELETE_DATA, payload);
+    res.json({ message: 'Sheet successfully deleted', sheet });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Start the server on port 3000
 const PORT = 3909;
